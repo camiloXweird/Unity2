@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class JugadorScript : MonoBehaviour {
 
@@ -11,6 +12,8 @@ public class JugadorScript : MonoBehaviour {
 	private ParticleSystem systemaParticulas;
 	private ParticleSystem systemaParticulasMalas;
 	private AudioSource audioRecoleccion;
+	public Text textoContador;
+	public Text textoGanar;
 
 	private Vector3 posicion;
 	//5. Creamos variable pa que la esfera se mueva mas rapido
@@ -42,7 +45,10 @@ public class JugadorScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	 	Object.DontDestroyOnLoad(transform.root.gameObject);
+		textoContador.text = "Puntaje" + PuntajeTotal.ToString();
+		textoGanar.text = "";
+	 	
+		 Object.DontDestroyOnLoad(transform.root.gameObject); 
 		rb=GetComponent<Rigidbody> ();
 		audioRecoleccion=GetComponent<AudioSource>();
 		systemaParticulas=particulas.GetComponent<ParticleSystem> ();
@@ -65,7 +71,9 @@ public class JugadorScript : MonoBehaviour {
 		//el if es para saber si choca con la esfera ya que la esfera le configuraremos el tag Recolectable 
 		if(other.gameObject.CompareTag ("Recolectable")){
 			//particulas
+			
 			posicion= other.gameObject.transform.position;
+
 			particulas.position = posicion;
 			systemaParticulas=particulas.GetComponent<ParticleSystem> ();
 			systemaParticulas.Play();
@@ -75,8 +83,9 @@ public class JugadorScript : MonoBehaviour {
 			//Puntos positivos
 
 			PuntajeTotal++;
+			textoContador.text = "Puntaje" + PuntajeTotal.ToString();
 			global.setColision(PuntajeTotal);
-			Debug.Log("su puntaje es " + PuntajeTotal);
+			//Debug.Log("su puntaje es " + PuntajeTotal);
 			audioRecoleccion.Play();
 
 		}else if(other.gameObject.CompareTag ("Trampa")){
@@ -91,29 +100,39 @@ public class JugadorScript : MonoBehaviour {
 			other.gameObject.SetActive(false);
 			//puntos negativos
 			PuntajeTotal--;
-			Debug.Log("su puntaje es " + PuntajeTotal);
+			textoContador.text = "Puntaje" + PuntajeTotal.ToString();
+			//Debug.Log("su puntaje es " + PuntajeTotal);
 			audioRecoleccion.Play();
 		}
 
-		if(cambio==7){
-				global.setColision(0);
-				 if(PuntajeTotal==7){
-			    	Debug.Log("Felicidades tu puntuacion fue la maxima " + PuntajeTotal + " Te llevas Oro");
-					 		}else if(PuntajeTotal>=4){
-		 					Debug.Log(":( Tu puntacion fue mas de la mitad " + PuntajeTotal + " Te llevas Plata");
-		 				}else if(PuntajeTotal>=1){
-		 						Debug.Log(":( Tu puntacion fue muy mala " + PuntajeTotal + " Te llevas Bronce");
-		 			}else{
-		 		Debug.Log(":( Tu puntacion es horrible retirate de este juego " + PuntajeTotal + " Te llevas Nada debes pagar");
-				}
-			if(SceneManager.GetActiveScene().name=="Scense1"){
-				SceneManager.LoadScene(1);
-				Debug.Log("Bienvenido a la segunda escena");
-			}else{
-				Debug.Log("Fin de juego");
-				SceneManager.LoadScene(2);
-
-			}	
+		if(other.gameObject.CompareTag ("Terminado")){
+			if(PuntajeTotal==15){
+				textoGanar.text = "Ganaste bien jugado" +"Su Puntaje es" + PuntajeTotal.ToString();
+			}else if(PuntajeTotal>=10){
+				textoGanar.text = "Bueno peor es nada" + "Su Puntajees " + PuntajeTotal.ToString();
+			}else if(PuntajeTotal<=9){
+				textoGanar.text = "Que perdedor camilo!!!" + "Ni pa que le enseño el puntaje";
+			}
 		}
+		// if(cambio==7){
+		// 		global.setColision(0);
+		// 		 if(PuntajeTotal==7){
+		// 	    	Debug.Log("Felicidades tu puntuacion fue la maxima " + PuntajeTotal + " Te llevas Oro");
+		// 			 		}else if(PuntajeTotal>=4){
+		//  					Debug.Log(":( Tu puntacion fue mas de la mitad " + PuntajeTotal + " Te llevas Plata");
+		//  				}else if(PuntajeTotal>=1){
+		//  						Debug.Log(":( Tu puntacion fue muy mala " + PuntajeTotal + " Te llevas Bronce");
+		//  			}else{
+		//  		Debug.Log(":( Tu puntacion es horrible retirate de este juego " + PuntajeTotal + " Te llevas Nada debes pagar");
+		// 		}
+		// 	if(SceneManager.GetActiveScene().name=="Scense1"){
+		// 		SceneManager.LoadScene(1);
+		// 		Debug.Log("Bienvenido a la segunda escena");
+		// 	}else{
+		// 		Debug.Log("Fin de juego");
+		// 		SceneManager.LoadScene(2);
+
+		// 	}	
+		// }
 	}
 }
