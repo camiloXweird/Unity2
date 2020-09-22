@@ -9,7 +9,6 @@ public class JugadorScript : MonoBehaviour
     private Vector3 posicion;
     //::obtenemos la referencia del Rigidbody
     private Rigidbody rb;
-
     //PARTICULAS
     public Transform particulas, particulasMalas, particulasWin, particulasWin2;
     private ParticleSystem systemaParticulas, systemaParticulasMalas, systemParticulasWin, systemParticulasWin2;
@@ -18,12 +17,13 @@ public class JugadorScript : MonoBehaviour
     public float speed;
     // Contador de tiempo
     public Text textoTemporizador, textoContador, textoGanar;
+    public Image imgVictoria;
     private float _time = 0.0f;
     private float segundos, minutos;
     // Texto para los puntos
     private int contadorPuntos;
 
-
+    private float posicionActual;
     //leer entrada desde el teclado
     //1.obtener la posicion de la esfera o objeto nivel horizontal y vertical:
 
@@ -43,6 +43,8 @@ public class JugadorScript : MonoBehaviour
         systemParticulasWin2.Stop();
         textoContador.text = "Contador " + contadorPuntos.ToString();
         textoGanar.text = "";
+        posicionActual = transform.position.y;
+        imgVictoria.enabled = false;
     }
 
 
@@ -53,6 +55,10 @@ public class JugadorScript : MonoBehaviour
         minutos = (int)(_time / 60f);
         segundos = (int)(_time % 60f);
         textoTemporizador.text = minutos.ToString("00") + ":" + segundos.ToString("00");
+        if (transform.position.y < posicionActual - 5.0f)
+        {
+            transform.position = new Vector3(-0.75f, 1.05f, -8.76f);
+        }
     }
 
     //2. como queremos mover el objeto o esfera debemos aplicarle una fuerza
@@ -123,6 +129,7 @@ public class JugadorScript : MonoBehaviour
             }
             systemParticulasWin.Play();
             systemParticulasWin2.Play();
+            imgVictoria.enabled = true;
         }
         textoContador.text = "Contador " + contadorPuntos.ToString();
     }
