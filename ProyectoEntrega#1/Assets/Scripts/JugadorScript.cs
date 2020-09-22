@@ -4,135 +4,146 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class JugadorScript : MonoBehaviour {
+public class JugadorScript : MonoBehaviour
+{
+    private Vector3 posicion;
+    //::obtenemos la referencia del Rigidbody
+    private Rigidbody rb;
 
-	//PARTICULAS
-	public Transform particulas;
-	public Transform particulasMalas;
-	private ParticleSystem systemaParticulas;
-	private ParticleSystem systemaParticulasMalas;
-	private AudioSource audioRecoleccion;
-	public Text textoContador;
-	public Text textoGanar;
+    //PARTICULAS
+    public Transform particulas, particulasMalas, particulasWin, particulasWin2;
+    private ParticleSystem systemaParticulas, systemaParticulasMalas, systemParticulasWin, systemParticulasWin2;
+    private AudioSource audioRecoleccion;
+    //5. Creamos variable pa que la esfera se mueva mas rapido
+    public float speed;
+    // Contador de tiempo
+    public Text textoTemporizador, textoContador, textoGanar;
+    private float _time = 0.0f;
+    private float segundos, minutos;
+    // Texto para los puntos
+    private int contadorPuntos;
 
-	private Vector3 posicion;
-	//5. Creamos variable pa que la esfera se mueva mas rapido
-	public int speed;
-	private int cambio=0;
-	private int PuntajeTotal=global.getColision();
 
-	//leer entrada desde el teclado
-	//1.obtener la posicion de la esfera o objeto nivel horizontal y vertical:
+    //leer entrada desde el teclado
+    //1.obtener la posicion de la esfera o objeto nivel horizontal y vertical:
 
-	void FixedUpdate(){
-		float moveHorizontal = Input.GetAxis ("Horizontal");
-		float moveVertical   = Input.GetAxis ("Vertical");
+    // Use this for initialization
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        Object.DontDestroyOnLoad(transform.root.gameObject);
+        audioRecoleccion = GetComponent<AudioSource>();
+        systemaParticulas = particulas.GetComponent<ParticleSystem>();
+        systemaParticulasMalas = particulasMalas.GetComponent<ParticleSystem>();
+        systemParticulasWin = particulasWin.GetComponent<ParticleSystem>();
+        systemParticulasWin2 = particulasWin2.GetComponent<ParticleSystem>();
+        systemaParticulas.Stop();
+        systemaParticulasMalas.Stop();
+        systemParticulasWin.Stop();
+        systemParticulasWin2.Stop();
+        textoContador.text = "Contador " + contadorPuntos.ToString();
+        textoGanar.text = "";
+    }
 
-		//3.una vez obtenida la referencia aplicaremos una fuerza con AddForce
-		//recibe como parametro vector 3 posiciones donde se aplicara la fuerza a la esfera
-		Vector3 movimiento = new Vector3 (moveHorizontal, 0.0f, moveVertical);
-		//4.ahora generamos la fuerza
-		rb.AddForce(movimiento*speed);
-		//finalmente podemos controlar la esfera con ñas flechas 
 
-		//5. crear script para asociar la camara; 
-	}
-	//2. como queremos mover el objeto o esfera debemos aplicarle una fuerza
-	//para eso manipulamos el Rigidbody:
+    // Update is called once per frame
+    void Update()
+    {
+        _time += Time.deltaTime;
+        minutos = (int)(_time / 60f);
+        segundos = (int)(_time % 60f);
+        textoTemporizador.text = minutos.ToString("00") + ":" + segundos.ToString("00");
+    }
 
-	//::obtenemos la referencia del Rigidbody
-	private Rigidbody rb;
+    //2. como queremos mover el objeto o esfera debemos aplicarle una fuerza
+    //para eso manipulamos el Rigidbody:
+    void FixedUpdate()
+    {
+        float moveHorizontal = Input.GetAxis("Horizontal");
+        float moveVertical = Input.GetAxis("Vertical");
 
-	// Use this for initialization
-	void Start () {
-		textoContador.text = "Puntaje" + PuntajeTotal.ToString();
-		textoGanar.text = "";
-	 	
-		 Object.DontDestroyOnLoad(transform.root.gameObject); 
-		rb=GetComponent<Rigidbody> ();
-		audioRecoleccion=GetComponent<AudioSource>();
-		systemaParticulas=particulas.GetComponent<ParticleSystem> ();
-		systemaParticulasMalas=particulasMalas.GetComponent<ParticleSystem>();
-		systemaParticulas.Stop();
-		systemaParticulasMalas.Stop();
-	}
+        Vector3 movimiento = new Vector3(moveHorizontal, 0.0f, moveVertical);
+        rb.AddForce(movimiento * speed);
+    }
 
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    /////////////Cuando queremos hacer objetos recolectables
+    //other es el parametro de tipo collide con el que choca 
+    //esta funcion es declarada automaticamente cuando un objeto choca con otro 
+    void OnTriggerEnter(Collider other)
+    {
+        //identifica el objeto con el cual el otro objeto colisiona other.gameObject
+        //el if es para saber si choca con la esfera ya que la esfera le configuraremos el tag Recolectable 
+        if (other.gameObject.CompareTag("Recolectable"))
+        {
+            //particulas
+            posicion = other.gameObject.transform.position;
+            particulas.position = posicion;
+            systemaParticulas = particulas.GetComponent<ParticleSystem>();
+            systemaParticulas.Play();
 
-	/////////////Cuando queremos hacer objetos recolectables
-	//other es el parametro de tipo collide con el que choca 
-	//esta funcion es declarada automaticamente cuando un objeto choca con otro 
-	void OnTriggerEnter (Collider other){
-		//identifica el objeto con el cual el otro objeto colisiona other.gameObject
-		//el if es para saber si choca con la esfera ya que la esfera le configuraremos el tag Recolectable 
-		if(other.gameObject.CompareTag ("Recolectable")){
-			//particulas
-			
-			posicion= other.gameObject.transform.position;
+            //desaparecer objeto recolectable
+            other.gameObject.SetActive(false);
 
-			particulas.position = posicion;
-			systemaParticulas=particulas.GetComponent<ParticleSystem> ();
-			systemaParticulas.Play();
-			//desaparecer objeto recolectable
-			other.gameObject.SetActive(false);
-			cambio++;
-			//Puntos positivos
+            //Puntos positivo
+            actualizaTiempo(true);
+            contadorPuntos++;
+            audioRecoleccion.Play();
 
-			PuntajeTotal++;
-			textoContador.text = "Puntaje" + PuntajeTotal.ToString();
-			global.setColision(PuntajeTotal);
-			//Debug.Log("su puntaje es " + PuntajeTotal);
-			audioRecoleccion.Play();
+        }
+        else if (other.gameObject.CompareTag("Trampa"))
+        {
+            other.gameObject.SetActive(false);
+        }
+        else if (other.gameObject.CompareTag("RecolectableMalo"))
+        {
+            posicion = other.gameObject.transform.position;
+            particulasMalas.position = posicion;
+            systemaParticulasMalas = particulasMalas.GetComponent<ParticleSystem>();
+            systemaParticulasMalas.Play();
+            //desaparecer objeto recolectable
+            other.gameObject.SetActive(false);
+            //puntos negativos
+            actualizaTiempo(false);
+            contadorPuntos--;
+            audioRecoleccion.Play();
+        }
+        else if (other.gameObject.CompareTag("Terminado"))
+        {
+            if (contadorPuntos == 15)
+            {
+                textoGanar.text = "Ganaste bien jugado" + "Su Puntaje es: " + contadorPuntos.ToString();
+            }
+            else if (contadorPuntos >= 10)
+            {
+                textoGanar.text = "Bueno, peor es nada" + "Su Puntaje es: " + contadorPuntos.ToString();
+            }
+            else if (contadorPuntos <= 9)
+            {
+                textoGanar.text = "Que perdedor camilo!!!" + "Ni pa que le enseño el puntaje";
+            }
+            systemParticulasWin.Play();
+            systemParticulasWin2.Play();
+        }
+        textoContador.text = "Contador " + contadorPuntos.ToString();
+    }
 
-		}else if(other.gameObject.CompareTag ("Trampa")){
-				other.gameObject.SetActive(false);
-		}else if(other.gameObject.CompareTag ("RecolectableMalo")){
-			
-			posicion= other.gameObject.transform.position;
-			particulasMalas.position = posicion;
-			systemaParticulasMalas=particulasMalas.GetComponent<ParticleSystem> ();
-			systemaParticulasMalas.Play();
-			//desaparecer objeto recolectable
-			other.gameObject.SetActive(false);
-			//puntos negativos
-			PuntajeTotal--;
-			textoContador.text = "Puntaje" + PuntajeTotal.ToString();
-			//Debug.Log("su puntaje es " + PuntajeTotal);
-			audioRecoleccion.Play();
-		}
+    void actualizaTiempo(bool recolectablePositivo)
+    {
+        if (recolectablePositivo)
+        {
+            if (_time >= 0f)
+            {
+                _time -= 2.0f;
+            }
+            else
+            {
+                _time = 0f;
+            }
+        }
+        else
+        {
+            _time += 2.0f;
 
-		if(other.gameObject.CompareTag ("Terminado")){
-			if(PuntajeTotal==15){
-				textoGanar.text = "Ganaste bien jugado" +"Su Puntaje es" + PuntajeTotal.ToString();
-			}else if(PuntajeTotal>=10){
-				textoGanar.text = "Bueno peor es nada" + "Su Puntajees " + PuntajeTotal.ToString();
-			}else if(PuntajeTotal<=9){
-				textoGanar.text = "Que perdedor camilo!!!" + "Ni pa que le enseño el puntaje";
-			}
-		}
-		// if(cambio==7){
-		// 		global.setColision(0);
-		// 		 if(PuntajeTotal==7){
-		// 	    	Debug.Log("Felicidades tu puntuacion fue la maxima " + PuntajeTotal + " Te llevas Oro");
-		// 			 		}else if(PuntajeTotal>=4){
-		//  					Debug.Log(":( Tu puntacion fue mas de la mitad " + PuntajeTotal + " Te llevas Plata");
-		//  				}else if(PuntajeTotal>=1){
-		//  						Debug.Log(":( Tu puntacion fue muy mala " + PuntajeTotal + " Te llevas Bronce");
-		//  			}else{
-		//  		Debug.Log(":( Tu puntacion es horrible retirate de este juego " + PuntajeTotal + " Te llevas Nada debes pagar");
-		// 		}
-		// 	if(SceneManager.GetActiveScene().name=="Scense1"){
-		// 		SceneManager.LoadScene(1);
-		// 		Debug.Log("Bienvenido a la segunda escena");
-		// 	}else{
-		// 		Debug.Log("Fin de juego");
-		// 		SceneManager.LoadScene(2);
-
-		// 	}	
-		// }
-	}
+        }
+    }
 }
