@@ -117,19 +117,20 @@ public class JugadorScript : MonoBehaviour
         {
             if (contadorPuntos == 15)
             {
-                textoGanar.text = "Ganaste bien jugado" + "Su Puntaje es: " + contadorPuntos.ToString();
+                textoGanar.text = "Ganaste bien jugado" + "\n" + "Su Puntaje es: " + contadorPuntos.ToString();
             }
             else if (contadorPuntos >= 10)
             {
-                textoGanar.text = "Bueno, peor es nada" + "Su Puntaje es: " + contadorPuntos.ToString();
+                textoGanar.text = "Bueno, peor es nada" + "\n" + "Su Puntaje es: " + contadorPuntos.ToString();
             }
             else if (contadorPuntos <= 9)
             {
-                textoGanar.text = "Que perdedor camilo!!!" + "Ni pa que le enseño el puntaje";
+                textoGanar.text = "Que perdedor camilo!!!" + "\n" + "Su Puntaje es: " + contadorPuntos.ToString();
             }
             systemParticulasWin.Play();
             systemParticulasWin2.Play();
             imgVictoria.enabled = true;
+            Invoke("pausarJuego", 2f);
         }
         textoContador.text = "Contador " + contadorPuntos.ToString();
     }
@@ -151,6 +152,18 @@ public class JugadorScript : MonoBehaviour
         {
             _time += 2.0f;
 
+        }
+    }
+
+    void pausarJuego()
+    {
+        if (Time.timeScale == 1)
+        {    //si la velocidad es 1
+            Time.timeScale = 0;     //que la velocidad del juego sea 0
+        }
+        else if (Time.timeScale == 0)
+        {   // si la velocidad es 0
+            Time.timeScale = 1;     // que la velocidad del juego regrese a 1
         }
     }
 }
