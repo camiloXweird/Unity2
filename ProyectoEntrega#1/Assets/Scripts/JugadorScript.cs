@@ -59,6 +59,10 @@ public class JugadorScript : MonoBehaviour
         {
             transform.position = new Vector3(-0.75f, 1.05f, -8.76f);
         }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            pausarJuego();
+        }
     }
 
     //2. como queremos mover el objeto o esfera debemos aplicarle una fuerza
